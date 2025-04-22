@@ -19,6 +19,10 @@ on:
         description: "deepsource"
         required: true
         type: string
+      coverage-file:
+        description: "coverage-file"
+        required: true
+        type: string
 
 env:
   DATADOG_API_KEY: ${{secrets.DATADOG_API_KEY}}
@@ -51,7 +55,7 @@ jobs:
         uses: deepsourcelabs/test-coverage-action@master
         with:
           key: ${{ inputs.language }}
-          coverage-file: clover.xml
+          coverage-file: {{ inputs.coverage-file }}
           dsn: ${{ inputs.deepsource }}
         continue-on-error: true
         
