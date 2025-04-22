@@ -13,17 +13,18 @@ on:
         type: string
 
 jobs:
-  name: Teams Notification
-  runs-on: ubuntu-latest
-  steps:
-    - uses: actions/checkout@v4
-    - name: Microsoft Teams Notification
-      uses: jdcargile/ms-teams-notification@v1.4
-      with:
-        github-token: ${{ github.token }} # this will use the runner's token.
-        ms-teams-webhook-uri: ${{ secrets.MSTEAMS_WEBHOOK }}
-        notification-summary: ${{ inputs.description }} &#x1F6A2​​ &#x2705;
-        notification-color: 17a2b8
-        timezone: America/Santiago
+  teams_notification:
+    name: Microsoft Teams Notification
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Microsoft Teams Notification
+        uses: jdcargile/ms-teams-notification@v1.4
+        with:
+          github-token: ${{ github.token }} # this will use the runner's token.
+          ms-teams-webhook-uri: ${{ secrets.MSTEAMS_WEBHOOK }}
+          notification-summary: ${{ inputs.description }} &#x1F6A2​​ &#x2705;
+          notification-color: 17a2b8
+          timezone: America/Santiago
 
   
