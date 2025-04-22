@@ -13,7 +13,7 @@ on:
         type: string
 
 jobs:
-  init:
+  initial:
     uses: hsandovaltides/shared_workflows/.github/workflows/test-build-deploy.yml@main
     with:
       node-version: ${{ inputs.node-version }}
