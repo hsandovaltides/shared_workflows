@@ -35,11 +35,11 @@ jobs:
         run: npm run test
         continue-on-error: true
       - name: Notify Failure
-        if: ${{ failure() }}        
         uses: hsandovaltides/shared_workflows/.github/workflows/teams-notification.yml@main
         with:
           node-version: ${{ inputs.node-version }}
           description: "Test Failed"
+        if: ${{ failure() }}
         
 
   build-and-deploy:
