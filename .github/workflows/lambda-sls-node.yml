@@ -34,12 +34,6 @@ jobs:
       - name: Run npm test
         run: npm run test
         continue-on-error: true
-      - name: Notify Failure
-        uses: hsandovaltides/shared_workflows/.github/workflows/teams-notification.yml@main
-        with:
-          node-version: ${{ inputs.node-version }}
-          description: "Test Failed"
-        if: ${{ failure() }}
         
 
   build-and-deploy:
@@ -67,12 +61,6 @@ jobs:
       - name: Deploy App To Aws
         run: ./node_modules/serverless/bin/serverless.js deploy --stage ${{ inputs.stage }}
       
-      - name: Notify Failure
-        uses: hsandovaltides/shared_workflows/.github/workflows/teams-notification.yml@main
-        with:
-          node-version: ${{ inputs.node-version }}
-          description: "Deploy Failed"
-        if: ${{ failure() }}        
         
 
   
