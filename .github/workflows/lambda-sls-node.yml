@@ -14,7 +14,7 @@ on:
 
 jobs:
   initial:
-    uses: ./teams-notification.yml@main
+    uses: hsandovaltides/shared_workflows/.github/workflows/teams-notification.yml@main
     with:
       node-version: ${{ inputs.node-version }}
       description: ${{ github.event.repository.name }}
