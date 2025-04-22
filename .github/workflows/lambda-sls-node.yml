@@ -11,6 +11,14 @@ on:
         description: "Stage"
         required: true
         type: string
+      language:
+        description: "language"
+        required: true
+        type: string
+      deepsource:
+        description: "deepsource"
+        required: true
+        type: string
 
 env:
   DATADOG_API_KEY: ${{secrets.DATADOG_API_KEY}}
@@ -37,6 +45,14 @@ jobs:
       
       - name: Run npm test
         run: npm run test
+        continue-on-error: true
+
+      - name: Report test coverage to DeepSource
+        uses: deepsourcelabs/test-coverage-action@master
+        with:
+          key: ${{ inputs.language }}
+          coverage-file: clover.xml
+          dsn: ${{ inputs.deepsource }}
         continue-on-error: true
         
 
