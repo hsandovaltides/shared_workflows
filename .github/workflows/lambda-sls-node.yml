@@ -19,10 +19,6 @@ on:
         description: "deepsource"
         required: true
         type: string
-      coverage-file:
-        description: "coverage-file"
-        required: true
-        type: string
 
 env:
   DATADOG_API_KEY: ${{secrets.DATADOG_API_KEY}}
@@ -48,14 +44,18 @@ jobs:
       - run: npm install
       
       - name: Run npm test
-        run: npm run test
+        run: jest --coverage=true --coverageReporters=cobertura
+        continue-on-error: true
+
+      - name: show coverage
+        run: ls ./coverage/
         continue-on-error: true
 
       - name: Report test coverage to DeepSource
         uses: deepsourcelabs/test-coverage-action@master
         with:
           key: ${{ inputs.language }}
-          coverage-file: ${{ inputs.coverage-file }}
+          coverage-file: ./coverage/cobertura-coverage.xml
           dsn: ${{ inputs.deepsource }}
         continue-on-error: true
         
