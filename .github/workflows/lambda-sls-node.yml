@@ -60,9 +60,11 @@ jobs:
       #  continue-on-error: true
 
       - name: Report test coverage to DeepSource
+        env:
+          DEEPSOURCE_DSN: ${{ inputs.deepsource }}
         run: |
           curl https://deepsource.com/cli | sh
-          ./bin/deepsource report --analyzer test-coverage --key ${{ inputs.language }}  ./coverage/cobertura-coverage.xml --dsn ${{ inputs.deepsource }}
+          ./bin/deepsource report --analyzer test-coverage --key ${{ inputs.language }}  ./coverage/cobertura-coverage.xml
 
         
 
