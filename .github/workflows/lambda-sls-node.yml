@@ -12,6 +12,9 @@ on:
         required: true
         type: string
 
+env:
+  DATADOG_API_KEY: ${{secrets.DATADOG_API_KEY}}
+
 jobs:
   initial:
     uses: hsandovaltides/shared_workflows/.github/workflows/teams-notification.yml@main
