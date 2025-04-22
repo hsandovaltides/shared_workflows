@@ -61,8 +61,8 @@ jobs:
 
       - name: Report test coverage to DeepSource
         run: |
-          curl deepsource.io/cli | sh
-          ./bin/deepsource report --key ${{ inputs.language }} --coverage-file ./coverage/cobertura-coverage.xml --dsn ${{ inputs.deepsource }}
+          curl https://deepsource.com/cli | sh
+          ./bin/deepsource report --analyzer test-coverage --key ${{ inputs.language }}  ./coverage/cobertura-coverage.xml --dsn ${{ inputs.deepsource }}
 
         
 
