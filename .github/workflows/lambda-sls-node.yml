@@ -44,11 +44,11 @@ jobs:
       - run: npm install
       
       - name: Run npm test
-        run: jest --coverage=true --coverageReporters=cobertura
+        run: npm run test
         continue-on-error: true
 
       - name: show coverage
-        run: ls ./coverage/
+        run: ls ./
         continue-on-error: true
 
       - name: Report test coverage to DeepSource
