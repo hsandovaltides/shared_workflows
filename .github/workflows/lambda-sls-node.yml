@@ -15,6 +15,7 @@ on:
 jobs:
   initial:
     uses: hsandovaltides/shared_workflows/.github/workflows/teams-notification.yml@main
+    secrets: inherit
     with:
       node-version: ${{ inputs.node-version }}
       description: ${{ github.event.repository.name }}
