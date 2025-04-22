@@ -7,8 +7,18 @@ on:
         description: "Node version"
         required: true
         type: string
+      stage:
+        description: "Stage"
+        required: true
+        type: string
 
 jobs:
+  init:
+    uses: hsandovaltides/shared_workflows/.github/workflows/test-build-deploy.yml@main
+    with:
+      node-version: ${{ inputs.node-version }}
+      description: ${{ github.event.repository.name }}
+
   test:
     runs-on: ubuntu-latest
     steps: 
@@ -18,8 +28,19 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ inputs.node-version }}
+      
       - run: npm install
-      - run: npm run test
+      
+      - name: Run npm test
+        run: npm run test
+        continue-on-error: true
+      - name: Notify Failure
+        if: ${{ failure() }}        
+        uses: hsandovaltides/shared_workflows/.github/workflows/teams-notification.yml@main
+        with:
+          node-version: ${{ inputs.node-version }}
+          description: "Test Failed"
+        
 
   build-and-deploy:
     needs: test
@@ -42,8 +63,15 @@ jobs:
       - name: Install modules
         run: npm install
       - name: Print Deploy
-        run: ./node_modules/serverless/bin/serverless.js print --stage dev
+        run: ./node_modules/serverless/bin/serverless.js print --stage ${{ inputs.stage }}
       - name: Deploy App To Aws
-        run: ./node_modules/serverless/bin/serverless.js deploy --stage dev
+        run: ./node_modules/serverless/bin/serverless.js deploy --stage ${{ inputs.stage }}
+      
+      - name: Notify Failure
+        if: ${{ failure() }}        
+        uses: hsandovaltides/shared_workflows/.github/workflows/teams-notification.yml@main
+        with:
+          node-version: ${{ inputs.node-version }}
+          description: "Deploy Failed"
 
   

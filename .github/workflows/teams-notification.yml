@@ -1,0 +1,29 @@
+name: build-test-deploy
+# Changed 'on' to enable this workflow to be called from other workflows
+on:
+  workflow_call:
+    inputs:
+      node-version:
+        description: "Node version"
+        required: true
+        type: string
+      description:
+        description: "Description"
+        required: true
+        type: string
+
+jobs:
+  name: Teams Notification
+  runs-on: ubuntu-latest
+  steps:
+    - uses: actions/checkout@v4
+    - name: Microsoft Teams Notification
+      uses: jdcargile/ms-teams-notification@v1.4
+      with:
+        github-token: ${{ github.token }} # this will use the runner's token.
+        ms-teams-webhook-uri: ${{ secrets.MSTEAMS_WEBHOOK }}
+        notification-summary: ${{ inputs.description }} &#x1F6A2​​ &#x2705;
+        notification-color: 17a2b8
+        timezone: America/Santiago
+
+  
