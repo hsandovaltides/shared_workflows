@@ -69,9 +69,10 @@ jobs:
       
       - name: Notify Failure
         uses: hsandovaltides/shared_workflows/.github/workflows/teams-notification.yml@main
-        if: ${{ failure() }}        
         with:
           node-version: ${{ inputs.node-version }}
           description: "Deploy Failed"
+        if: ${{ failure() }}        
+        
 
   
