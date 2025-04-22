@@ -68,8 +68,8 @@ jobs:
         run: ./node_modules/serverless/bin/serverless.js deploy --stage ${{ inputs.stage }}
       
       - name: Notify Failure
-        if: ${{ failure() }}        
         uses: hsandovaltides/shared_workflows/.github/workflows/teams-notification.yml@main
+        if: ${{ failure() }}        
         with:
           node-version: ${{ inputs.node-version }}
           description: "Deploy Failed"
