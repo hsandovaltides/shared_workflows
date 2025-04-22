@@ -64,7 +64,7 @@ jobs:
           DEEPSOURCE_DSN: ${{ inputs.deepsource }}
         run: |
           curl https://deepsource.com/cli | sh
-          ./bin/deepsource report --analyzer test-coverage --key ${{ inputs.language }}  ./coverage/cobertura-coverage.xml
+          ./bin/deepsource report --analyzer test-coverage --key ${{ inputs.language }} --value-file ./coverage/cobertura-coverage.xml
 
         
 
