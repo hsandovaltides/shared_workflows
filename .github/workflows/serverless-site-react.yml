@@ -47,7 +47,7 @@ jobs:
     needs: deploy-architecture
     runs-on: ubuntu-latest
     env:
-      BUCKET_DEV_ID: ${{ inputs.stage }}-${{ inputs.project-name }}-deployment
+      BUCKET_DEV_ID: ${{ inputs.stage }}-${{ inputs.project-name }}-app
       CLOUDFRONT_DIST_DEV: asd
     steps:
       - name: Checkout
@@ -67,7 +67,7 @@ jobs:
       - name: Install modules
         run: npm install
       - name: Set Env DIST_DEV
-        run: echo "CLOUDFRONT_DIST_DEV=$(aws cloudformation  describe-stacks --stack-name myportfolio-web-dev --query 'Stacks[0].Outputs[?OutputKey==`cloudFormationWebId`].OutputValue' --output text)" >> $GITHUB_ENV
+        run: echo "CLOUDFRONT_DIST_DEV=$(aws cloudformation  describe-stacks --stack-name ${{ inputs.project-name }}-${{ inputs.stage }} --query 'Stacks[0].Outputs[?OutputKey==`cloudFormationWebId`].OutputValue' --output text)" >> $GITHUB_ENV
       - name: Build application
         run: npm run build
       - name: Print variables
