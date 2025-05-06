@@ -47,7 +47,7 @@ jobs:
     needs: deploy-architecture
     runs-on: ubuntu-latest
     env:
-      BUCKET_DEV_ID: ${{ inputs.stage }}-${{ inputs.project-name }}-app
+      BUCKET_DEV_ID: ${{ inputs.stage }}-bucket-${{ inputs.project-name }}-app
       CLOUDFRONT_DIST_DEV: asd
     steps:
       - name: Checkout
