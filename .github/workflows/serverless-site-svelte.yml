@@ -1,0 +1,82 @@
+name: static-site
+# Changed 'on' to enable this workflow to be called from other workflows
+on:
+  workflow_call:
+    inputs:
+      node-version:
+        description: "Node version"
+        required: true
+        type: string
+      stage:
+        description: "Stage"
+        required: true
+        type: string
+      project-name:
+        description: "Name of project in aws"
+        required: true
+        type: string
+
+jobs:
+  
+  deploy-architecture:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_DEV_REGION }}
+      
+      - name: use node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ inputs.node-version }}
+
+      - name: Install modules
+        run: npm install
+      - name: Print Deploy
+        run: ./node_modules/serverless/bin/serverless.js print --stage ${{ inputs.stage }}
+      - name: Deploy App To Aws
+        run: ./node_modules/serverless/bin/serverless.js deploy --stage ${{ inputs.stage }}
+      
+        
+  deploy-project:
+    needs: deploy-architecture
+    runs-on: ubuntu-latest
+    env:
+      BUCKET_DEV_ID: ${{ inputs.stage }}-bucket-${{ inputs.project-name }}-app
+      CLOUDFRONT_DIST_DEV: asd
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_DEV_REGION }}
+      
+      - name: use node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ inputs.node-version }}
+      
+      - name: Install modules
+        run: npm install
+      - name: Set Env DIST_DEV
+        run: echo "CLOUDFRONT_DIST_DEV=$(aws cloudformation  describe-stacks --stack-name ${{ inputs.project-name }}-${{ inputs.stage }} --query 'Stacks[0].Outputs[?OutputKey==`cloudFormationWebId`].OutputValue' --output text)" >> $GITHUB_ENV
+      - name: Build application
+        run: npm run build
+      - name: Print variables
+        run: |
+          echo $BUCKET_DEV_ID
+          echo $CLOUDFRONT_DIST_DEV
+      - name: Deploy to S3
+        run: aws s3 sync --delete ./dist/ s3://$BUCKET_DEV_ID
+      - name: Create CloudFront invalidation
+        run: aws cloudfront create-invalidation --distribution-id $CLOUDFRONT_DIST_DEV --paths "/*"
+
+  
