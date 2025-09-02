@@ -7,10 +7,6 @@ on:
         description: "Node version"
         required: true
         type: string
-      stage:
-        description: "Stage"
-        required: true
-        type: string
       project-name:
         description: "Name of project in aws"
         required: true
@@ -29,7 +25,15 @@ jobs:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_DEV_REGION }}
-      
+      - name: Set environment variable based on branch
+        run: |
+          if [[ "${{ github.ref_name }}" == "main" ]]; then
+            echo "DEPLOY_ENV=prod" >> $GITHUB_ENV
+          elif [[ "${{ github.ref_name }}" == "qa" ]]; then
+            echo "DEPLOY_ENV=qa" >> $GITHUB_ENV
+          else
+            echo "DEPLOY_ENV=dev" >> $GITHUB_ENV
+          fi
       - name: use node.js
         uses: actions/setup-node@v4
         with:
@@ -38,16 +42,15 @@ jobs:
       - name: Install modules
         run: npm install
       - name: Print Deploy
-        run: ./node_modules/serverless/bin/serverless.js print --stage ${{ inputs.stage }}
+        run: ./node_modules/serverless/bin/serverless.js print --stage ${{ env.DEPLOY_ENV }}
       - name: Deploy App To Aws
-        run: ./node_modules/serverless/bin/serverless.js deploy --stage ${{ inputs.stage }}
+        run: ./node_modules/serverless/bin/serverless.js deploy --stage ${{ env.DEPLOY_ENV }}
       
         
   deploy-project:
     needs: deploy-architecture
     runs-on: ubuntu-latest
     env:
-      BUCKET_DEV_ID: ${{ inputs.stage }}-bucket-${{ inputs.project-name }}-app
       CLOUDFRONT_DIST_DEV: asd
     steps:
       - name: Checkout
@@ -59,6 +62,17 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_DEV_REGION }}
       
+      - name: Set environment variable based on branch
+        run: |
+          if [[ "${{ github.ref_name }}" == "main" ]]; then
+            echo "DEPLOY_ENV=prod" >> $GITHUB_ENV
+          elif [[ "${{ github.ref_name }}" == "qa" ]]; then
+            echo "DEPLOY_ENV=qa" >> $GITHUB_ENV
+          else
+            echo "DEPLOY_ENV=dev" >> $GITHUB_ENV
+          fi
+          
+          echo BUCKET_DEV_ID: ${{ env.DEPLOY_ENV }}-bucket-${{ inputs.project-name }}-app >> $GITHUB_ENV
       - name: use node.js
         uses: actions/setup-node@v4
         with:
@@ -67,15 +81,16 @@ jobs:
       - name: Install modules
         run: npm install
       - name: Set Env DIST_DEV
-        run: echo "CLOUDFRONT_DIST_DEV=$(aws cloudformation  describe-stacks --stack-name ${{ inputs.project-name }}-${{ inputs.stage }} --query 'Stacks[0].Outputs[?OutputKey==`cloudFormationWebId`].OutputValue' --output text)" >> $GITHUB_ENV
+        run: echo "CLOUDFRONT_DIST_DEV=$(aws cloudformation  describe-stacks --stack-name ${{ inputs.project-name }}-${{ env.GITHUB_ENV }} --query 'Stacks[0].Outputs[?OutputKey==`cloudFormationWebId`].OutputValue' --output text)" >> $GITHUB_ENV
       - name: Build application
         run: npm run build
       - name: Print variables
         run: |
-          echo $BUCKET_DEV_ID
+          echo ${{ env.BUCKET_DEV_ID }}
           echo $CLOUDFRONT_DIST_DEV
+          echo "Deploying to: ${{ env.DEPLOY_ENV }}"
       - name: Deploy to S3
-        run: aws s3 sync --delete ./dist/ s3://$BUCKET_DEV_ID
+        run: aws s3 sync --delete ./dist/ s3://${{ env.BUCKET_DEV_ID }}
       - name: Create CloudFront invalidation
         run: aws cloudfront create-invalidation --distribution-id $CLOUDFRONT_DIST_DEV --paths "/*"
 
