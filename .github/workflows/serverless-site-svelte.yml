@@ -84,7 +84,7 @@ jobs:
       - name: Install modules
         run: npm install
       - name: Set Env DIST_DEV
-        run: echo "CLOUDFRONT_DIST_DEV=$(aws cloudformation  describe-stacks --stack-name ${{ inputs.project-name }}-${{ env.GITHUB_ENV }} --query 'Stacks[0].Outputs[?OutputKey==`cloudFormationWebId`].OutputValue' --output text)" >> $GITHUB_ENV
+        run: echo "CLOUDFRONT_DIST_DEV=$(aws cloudformation  describe-stacks --stack-name ${{ inputs.project-name }}-${{ env.DEPLOY_ENV }} --query 'Stacks[0].Outputs[?OutputKey==`cloudFormationWebId`].OutputValue' --output text)" >> $GITHUB_ENV
       - name: Build application
         run: npm run build
       - name: Print variables
