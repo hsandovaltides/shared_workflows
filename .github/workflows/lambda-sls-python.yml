@@ -1,0 +1,103 @@
+name: build-test-deploy
+# Changed 'on' to enable this workflow to be called from other workflows
+on:
+  workflow_call:
+    inputs:
+      package-manager:
+        description: "Package manager"
+        required: true
+        type: string
+      node-version:
+        description: "Node version"
+        required: true
+        type: string
+      stage:
+        description: "Stage"
+        required: true
+        type: string
+      language:
+        description: "language"
+        required: true
+        type: string
+      deepsource:
+        description: "deepsource"
+        required: true
+        type: string
+
+env:
+  DATADOG_API_KEY: ${{secrets.DATADOG_API_KEY}}
+
+jobs:
+  initial:
+    uses: hsandovaltides/shared_workflows/.github/workflows/teams-notification.yml@main
+    secrets: inherit
+    with:
+      node-version: ${{ inputs.node-version }}
+      description: ${{ github.event.repository.name }}
+
+  test:
+    runs-on: ubuntu-latest
+    steps: 
+      - name: checkout repo
+        uses: actions/checkout@v4
+
+      - name: Validate package manager
+        run: |
+          if [[ "${{ inputs.package-manager }}" != "npm" && "${{ inputs.package-manager }}" != "yarn" && "${{ inputs.package-manager }}" != "pnpm" ]]; then
+        echo "Error: Invalid package manager. Must be npm, yarn, or pnpm"
+        exit 1
+          fi
+
+      - name: use node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ inputs.node-version }}
+      
+      - run: npm install
+      
+      - name: Run npm test
+        run: npm run test
+        continue-on-error: true
+
+      - name: show coverage
+        run: ls ./
+        continue-on-error: true
+
+      - name: Report test coverage to DeepSource
+        env:
+          DEEPSOURCE_DSN: ${{ inputs.deepsource }}
+        run: |
+          curl https://deepsource.com/cli | sh
+          ./bin/deepsource report --analyzer test-coverage --key ${{ inputs.language }} --value-file ./coverage/cobertura-coverage.xml
+        continue-on-error: true
+
+        
+
+  build-and-deploy:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_DEV_REGION }}
+      
+      - name: use node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ inputs.node-version }}
+
+      - name: Install modules
+        run: npm install
+      - name: Print Deploy
+        run: ./node_modules/serverless/bin/serverless.js print --stage ${{ inputs.stage }}
+      - name: Deploy App To Aws
+        run: ./node_modules/serverless/bin/serverless.js deploy --stage ${{ inputs.stage }}
+      
+        
+
+  
