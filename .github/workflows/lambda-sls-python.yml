@@ -55,7 +55,10 @@ jobs:
 
       - uses: pnpm/action-setup@v4
         if: inputs.node-package-manager == 'pnpm'
-      
+
+      - uses: pnpm/action-setup@v4
+        if: inputs.node-package-manager == 'pnpm'
+
       - run: pnpm install
         if: inputs.node-package-manager == 'pnpm'
 
@@ -108,6 +111,9 @@ jobs:
         with:
           node-version: ${{ inputs.node-version }}
 
+      - uses: pnpm/action-setup@v4
+        if: inputs.node-package-manager == 'pnpm'
+        
       - name: Install modules npm
         run: npm install
         if: inputs.node-package-manager == 'npm'
