@@ -20,6 +20,11 @@ on:
         description: "deepsource"
         required: true
         type: string
+      python-version:
+        description: "Python version"
+        required: true
+        default: "3.11"
+        type: string
 
 env:
   DATADOG_API_KEY: ${{secrets.DATADOG_API_KEY}}
@@ -38,6 +43,10 @@ jobs:
       - name: checkout repo
         uses: actions/checkout@v4
 
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ inputs.python-version }}
+          
       
       - name: use node.js
         uses: actions/setup-node@v4
