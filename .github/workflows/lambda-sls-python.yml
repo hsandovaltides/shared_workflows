@@ -3,7 +3,7 @@ name: build-test-deploy
 on:
   workflow_call:
     inputs:
-      package-manager:
+      node-package-manager:
         description: "Package manager"
         required: true
         type: string
@@ -49,23 +49,23 @@ jobs:
           cache: pnpm
 
       - uses: pnpm/action-setup@v4
-        if: inputs.package-manager == 'pnpm'
+        if: inputs.node-package-manager == 'pnpm'
       
       - run: pnpm install
-        if: inputs.package-manager == 'pnpm'
+        if: inputs.node-package-manager == 'pnpm'
 
       - name: Run npm test
         run: pnpm run test
         continue-on-error: true
-        if: inputs.package-manager == 'pnpm'
+        if: inputs.node-package-manager == 'pnpm'
       
       - run: npm install
-        if: inputs.package-manager == 'npm'
+        if: inputs.node-package-manager == 'npm'
       
       - name: Run npm test
         run: pnpm run test
         continue-on-error: true
-        if: inputs.package-manager == 'npm'
+        if: inputs.node-package-manager == 'npm'
 
       - name: show coverage
         run: ls ./
@@ -102,12 +102,11 @@ jobs:
 
       - name: Install modules npm
         run: npm install
-        if: inputs.package-manager == 'npm'
+        if: inputs.node-package-manager == 'npm'
 
       - name: Install modules pnpm
         uses: pnpm/action-setup@v4
-        if: inputs.package-manager == 'pnpm'
-
+        if: inputs.node-package-manager == 'pnpm'
       - name: Print Deploy
         run: ./node_modules/serverless/bin/serverless.js print --stage ${{ inputs.stage }}
       - name: Deploy App To Aws
