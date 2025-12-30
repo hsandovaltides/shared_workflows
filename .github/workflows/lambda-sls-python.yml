@@ -41,23 +41,31 @@ jobs:
       - name: checkout repo
         uses: actions/checkout@v4
 
-      - name: Validate package manager
-        run: |
-          if [[ "${{ inputs.package-manager }}" != "npm" && "${{ inputs.package-manager }}" != "yarn" && "${{ inputs.package-manager }}" != "pnpm" ]]; then
-        echo "Error: Invalid package manager. Must be npm, yarn, or pnpm"
-        exit 1
-          fi
-
+      
       - name: use node.js
         uses: actions/setup-node@v4
         with:
           node-version: ${{ inputs.node-version }}
+          cache: pnpm
+
+      - uses: pnpm/action-setup@v4
+        if: inputs.package-manager == 'pnpm'
+      
+      - run: pnpm install
+        if: inputs.package-manager == 'pnpm'
+
+      - name: Run npm test
+        run: pnpm run test
+        continue-on-error: true
+        if: inputs.package-manager == 'pnpm'
       
       - run: npm install
+        if: inputs.package-manager == 'npm'
       
       - name: Run npm test
-        run: npm run test
+        run: pnpm run test
         continue-on-error: true
+        if: inputs.package-manager == 'npm'
 
       - name: show coverage
         run: ls ./
@@ -90,9 +98,16 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ inputs.node-version }}
+          cache: pnpm
 
-      - name: Install modules
+      - name: Install modules npm
         run: npm install
+        if: inputs.package-manager == 'npm'
+
+      - name: Install modules pnpm
+        uses: pnpm/action-setup@v4
+        if: inputs.package-manager == 'pnpm'
+
       - name: Print Deploy
         run: ./node_modules/serverless/bin/serverless.js print --stage ${{ inputs.stage }}
       - name: Deploy App To Aws
