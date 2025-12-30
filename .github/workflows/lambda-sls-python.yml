@@ -5,14 +5,11 @@ on:
     inputs:
       node-package-manager:
         description: "Package manager"
+        default: "pnpm"
         required: true
         type: string
       node-version:
         description: "Node version"
-        required: true
-        type: string
-      stage:
-        description: "Stage"
         required: true
         type: string
       language:
@@ -107,10 +104,22 @@ jobs:
       - name: Install modules pnpm
         uses: pnpm/action-setup@v4
         if: inputs.node-package-manager == 'pnpm'
+      
+
+      - name: Set stage based on branch
+        id: set-stage
+        run: |
+          if [ "${{ github.ref }}" == "refs/heads/main" ]; then
+          echo "stage=pro" >> $GITHUB_OUTPUT
+            else
+          echo "stage=dev" >> $GITHUB_OUTPUT
+          fi
+
       - name: Print Deploy
-        run: ./node_modules/serverless/bin/serverless.js print --stage ${{ inputs.stage }}
+        run: ./node_modules/serverless/bin/serverless.js print --stage ${{ steps.set-stage.outputs.stage }}
+      
       - name: Deploy App To Aws
-        run: ./node_modules/serverless/bin/serverless.js deploy --stage ${{ inputs.stage }}
+        run: ./node_modules/serverless/bin/serverless.js deploy --stage ${{ steps.set-stage.outputs.stage }}
       
         
 
