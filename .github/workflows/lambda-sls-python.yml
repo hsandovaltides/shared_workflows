@@ -49,7 +49,7 @@ jobs:
 
   test:
     runs-on: ubuntu-latest
-    if : ${{ inputs.skip-tests == false }}
+    
     steps: 
       - name: checkout repo
         uses: actions/checkout@v4
@@ -67,30 +67,31 @@ jobs:
       - uses: pnpm/action-setup@v4
         with:
           version: ${{ inputs.pnpm-version }}
-        if: inputs.node-package-manager == 'pnpm'
+        if: inputs.node-package-manager == 'pnpm' && inputs.skip-tests == false
 
       - uses: pnpm/action-setup@v4
-        if: inputs.node-package-manager == 'pnpm'
+        if: inputs.node-package-manager == 'pnpm' && inputs.skip-tests == false
 
       - run: pnpm install
-        if: inputs.node-package-manager == 'pnpm'
+        if: inputs.node-package-manager == 'pnpm' && inputs.skip-tests == false
 
       - name: Run npm test
         run: pnpm run test
         continue-on-error: true
-        if: inputs.node-package-manager == 'pnpm'
+        if: inputs.node-package-manager == 'pnpm' && inputs.skip-tests == false
       
       - run: npm install
-        if: inputs.node-package-manager == 'npm'
+        if: inputs.node-package-manager == 'npm' && inputs.skip-tests == false
       
       - name: Run npm test
         run: pnpm run test
         continue-on-error: true
-        if: inputs.node-package-manager == 'npm'
+        if: inputs.node-package-manager == 'npm' && inputs.skip-tests == false
 
       - name: show coverage
         run: ls ./
         continue-on-error: true
+        if: inputs.skip-tests == false
 
       - name: Report test coverage to DeepSource
         env:
@@ -99,6 +100,7 @@ jobs:
           curl https://deepsource.com/cli | sh
           ./bin/deepsource report --analyzer test-coverage --key ${{ inputs.language }} --value-file ./coverage/cobertura-coverage.xml
         continue-on-error: true
+        if: inputs.skip-tests == false
 
         
 
