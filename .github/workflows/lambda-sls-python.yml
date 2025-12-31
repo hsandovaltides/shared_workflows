@@ -59,17 +59,15 @@ jobs:
           python-version: ${{ inputs.python-version }}
           
       
-      - name: use node.js
+      - name: Install node.js
         uses: actions/setup-node@v4
         with:
           node-version: ${{ inputs.node-version }}
 
-      - uses: pnpm/action-setup@v4
+      - name: Install modules pnpm
+        uses: pnpm/action-setup@v4
         with:
           version: ${{ inputs.pnpm-version }}
-        if: inputs.node-package-manager == 'pnpm' && inputs.skip-tests == false
-
-      - uses: pnpm/action-setup@v4
         if: inputs.node-package-manager == 'pnpm' && inputs.skip-tests == false
 
       - run: pnpm install
@@ -117,19 +115,14 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_DEV_REGION }}
 
-      - uses: actions/setup-python@v5
+      - name: Install Python
+        uses: actions/setup-python@v5
         with:
           python-version: ${{ inputs.python-version }}
       
-      - name: use node.js
+      - name: Install node.js
         uses: actions/setup-node@v4
-        with:
-          node-version: ${{ inputs.node-version }}
 
-      - uses: pnpm/action-setup@v4
-        with:
-          version: ${{ inputs.pnpm-version }}
-        if: inputs.node-package-manager == 'pnpm'
         
       - name: Install modules npm
         run: npm install
@@ -137,6 +130,8 @@ jobs:
 
       - name: Install modules pnpm
         uses: pnpm/action-setup@v4
+        with:
+          version: ${{ inputs.pnpm-version }}
         if: inputs.node-package-manager == 'pnpm'
       
 
