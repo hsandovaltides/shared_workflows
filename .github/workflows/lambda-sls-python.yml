@@ -25,6 +25,16 @@ on:
         required: true
         default: "3.11"
         type: string
+      skip-tests:
+        description: "Skip tests"
+        required: false
+        default: true
+        type: boolean
+      pnpm-version:
+        description: "pnpm version"
+        required: false
+        default: "9.12.2"
+        type: string
 
 env:
   DATADOG_API_KEY: ${{secrets.DATADOG_API_KEY}}
@@ -39,6 +49,7 @@ jobs:
 
   test:
     runs-on: ubuntu-latest
+    if : ${{ inputs.skip-tests == false }}
     steps: 
       - name: checkout repo
         uses: actions/checkout@v4
@@ -54,6 +65,8 @@ jobs:
           node-version: ${{ inputs.node-version }}
 
       - uses: pnpm/action-setup@v4
+        with:
+          version: ${{ inputs.pnpm-version }}
         if: inputs.node-package-manager == 'pnpm'
 
       - uses: pnpm/action-setup@v4
@@ -112,6 +125,8 @@ jobs:
           node-version: ${{ inputs.node-version }}
 
       - uses: pnpm/action-setup@v4
+        with:
+          version: ${{ inputs.pnpm-version }}
         if: inputs.node-package-manager == 'pnpm'
         
       - name: Install modules npm
