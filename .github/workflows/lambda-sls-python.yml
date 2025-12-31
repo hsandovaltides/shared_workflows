@@ -152,6 +152,8 @@ jobs:
           fi
 
       - name: Print Deploy
+        env:
+          NODE_OPTIONS: "--no-experimental-require-module"
         run: ./node_modules/serverless/bin/serverless.js print --stage ${{ steps.set-stage.outputs.stage }}
       
       - name: Deploy App To Aws
