@@ -128,13 +128,16 @@ jobs:
         run: npm install
         if: inputs.node-package-manager == 'npm'
 
-      - name: Install modules pnpm
+      - name: Install pnpm
         uses: pnpm/action-setup@v4
         with:
           version: ${{ inputs.pnpm-version }}
         if: inputs.node-package-manager == 'pnpm'
       
-
+      - name: Install modules pnpm
+        run: pnpm install
+        if: inputs.node-package-manager == 'pnpm'
+      
       - name: Set stage based on branch
         id: set-stage
         run: |
