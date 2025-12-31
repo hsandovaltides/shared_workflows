@@ -53,14 +53,18 @@ jobs:
     steps: 
       - name: checkout repo
         uses: actions/checkout@v4
+        if: inputs.skip-tests == false
 
-      - uses: actions/setup-python@v5
+      - name: Install Python
+        uses: actions/setup-python@v5
+        if: inputs.skip-tests == false
         with:
           python-version: ${{ inputs.python-version }}
           
       
       - name: Install node.js
         uses: actions/setup-node@v4
+        if: inputs.skip-tests == false
         with:
           node-version: ${{ inputs.node-version }}
 
