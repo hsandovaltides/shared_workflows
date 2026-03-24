@@ -3,6 +3,11 @@ name: svelte-static-site
 on:
   workflow_call:
     inputs:
+      node-package-manager:
+        description: "Package manager"
+        default: "npm"
+        required: false
+        type: string
       node-version:
         description: "Node version"
         required: true
@@ -10,6 +15,11 @@ on:
       project-name:
         description: "Name of project in aws"
         required: true
+        type: string
+      pnpm-version:
+        description: "pnpm version"
+        required: false
+        default: "9.12.2"
         type: string
 
 jobs:
@@ -39,8 +49,20 @@ jobs:
         with:
           node-version: ${{ inputs.node-version }}
 
+      - name: Install modules pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: ${{ inputs.pnpm-version }}
+        if: inputs.node-package-manager == 'pnpm'
+
       - name: Install modules
         run: npm install
+        if: inputs.node-package-manager == 'npm'
+
+      - name: Install modules pnpm
+        run: pnpm install
+        if: inputs.node-package-manager == 'pnpm'
+        
       - name: Print Deploy
         run: ./node_modules/serverless/bin/serverless.js print --stage ${{ env.DEPLOY_ENV }}
       - name: Deploy App To Aws
@@ -81,17 +103,41 @@ jobs:
         with:
           node-version: ${{ inputs.node-version }}
       
+      - name: Install modules pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: ${{ inputs.pnpm-version }}
+        if: inputs.node-package-manager == 'pnpm'
+
       - name: Install modules
         run: npm install
+        if: inputs.node-package-manager == 'npm'
+
+      - name: Install modules pnpm
+        run: pnpm install
+        if: inputs.node-package-manager == 'pnpm'
+
+
+      - name: Set stage based on branch
+        id: set-stage
+        run: |
+          if [ "${{ github.ref }}" == "refs/heads/main" ]; then
+          echo "stage=pro" >> $GITHUB_OUTPUT
+            else
+          echo "stage=dev" >> $GITHUB_OUTPUT
+          fi
+        
       - name: Set Env DIST_DEV
         run: echo "CLOUDFRONT_DIST_DEV=$(aws cloudformation  describe-stacks --stack-name ${{ inputs.project-name }}-${{ env.DEPLOY_ENV }} --query 'Stacks[0].Outputs[?OutputKey==`cloudFormationWebId`].OutputValue' --output text)" >> $GITHUB_ENV
+      
       - name: Build application
         run: npm run build
-      - name: Print variables
-        run: |
-          echo ${{ env.BUCKET_DEV_ID }}
-          echo $CLOUDFRONT_DIST_DEV
-          echo "Deploying to: ${{ env.DEPLOY_ENV }}"
+        if: inputs.node-package-manager == 'npm'
+
+      - name: Build application
+        run: pnpm run build
+        if: inputs.node-package-manager == 'pnpm'
+      
       - name: Deploy to S3
         run: aws s3 sync --delete ./dist/ s3://${{ env.BUCKET_DEV_ID }}
       - name: Create CloudFront invalidation
