@@ -130,6 +130,13 @@ jobs:
       - name: Set Env DIST_DEV
         run: echo "CLOUDFRONT_DIST_DEV=$(aws cloudformation  describe-stacks --stack-name ${{ inputs.project-name }}-${{ env.DEPLOY_ENV }} --query 'Stacks[0].Outputs[?OutputKey==`cloudFormationWebId`].OutputValue' --output text)" >> $GITHUB_ENV
       
+      - name: Print variables
+        run: |
+          echo ${{ env.BUCKET_DEV_ID }}
+          echo $CLOUDFRONT_DIST_DEV
+          echo "Deploying to: ${{ env.DEPLOY_ENV }}"
+
+
       - name: Build application
         run: npm run build
         if: inputs.node-package-manager == 'npm'
