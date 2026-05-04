@@ -28,6 +28,10 @@ on:
         required: false
         default: 9
         type: number
+      app-name:
+        description: "App Name"
+        required: true
+        type: string
 
 jobs:
   build:
@@ -102,7 +106,7 @@ jobs:
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
-          name: eggestime-chile-${{ github.run_number }}
+          name: ${{inputs.app-name}}-${{ github.run_number }}
           path: android/app/build/outputs/apk/release/*.apk
           retention-days: ${{ inputs.retention-days }}
           if-no-files-found: error
