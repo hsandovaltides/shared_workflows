@@ -23,6 +23,11 @@ on:
         required: false
         default: 15
         type: number
+      pnpm-version:
+        description: "Pnpm Version"
+        required: false
+        default: 9
+        type: number
 
 jobs:
   build:
@@ -38,7 +43,7 @@ jobs:
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
         with:
-          version: 9
+          version: ${{ inputs.pnpm-version }}
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
