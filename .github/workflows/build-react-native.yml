@@ -35,9 +35,11 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      # ── 1. Checkout ──────────────────────────────────────────────────────────
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      # ── 2. Setup pnpm & Node.js ────────────────────────────────────────────────
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
         with:
@@ -49,32 +51,46 @@ jobs:
           node-version: ${{ inputs.node-version }}
           cache: pnpm
 
-      # Setup Java con caché de Gradle integrado (MUCHO más rápido)
+      # ── 3. Java (Sin caché automático para evitar el error) ───────────────────
       - name: Setup Java
         uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: ${{ inputs.java-version }}
-          cache: 'gradle'
 
+      # ── 4. Dependencias JS ─────────────────────────────────────────────────────
       - name: Install dependencies
         run: pnpm install --frozen-lockfile --prefer-offline
 
+      # ── 5. Ejecutar Pruebas ───────────────────────────────────────────────────
       - name: Run tests
         if: inputs.skip-tests == false
         run: pnpm test
         continue-on-error: true
 
+      # ── 6. Expo prebuild (Genera la carpeta /android) ─────────────────────────
       - name: Expo prebuild
         run: npx expo prebuild --platform android
         env:
           CI: true
 
+      # ── 7. Caché de Gradle (Ahora que ya existe la carpeta /android) ──────────
+      - name: Cache Gradle
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: gradle-${{ runner.os }}-${{ hashFiles('android/gradle/wrapper/gradle-wrapper.properties') }}
+          restore-keys: |
+            gradle-${{ runner.os }}-
+
+      # ── 8. Permisos de ejecución ──────────────────────────────────────────────
       - name: Make gradlew executable
         run: chmod +x android/gradlew
 
-      # Build con flags de optimización
-      - name: Build APK (release)
+      # ── 9. Build APK con optimizaciones de rendimiento ────────────────────────
+      - name: Build APK (Release)
         working-directory: android
         run: |
           ./gradlew assembleRelease \
@@ -82,7 +98,8 @@ jobs:
             --parallel \
             --build-cache \
             -Dorg.gradle.jvmargs="-Xmx3g -XX:MaxMetaspaceSize=512m"
-        
+
+      # ── 10. Subir APK como artefacto ──────────────────────────────────────────
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
