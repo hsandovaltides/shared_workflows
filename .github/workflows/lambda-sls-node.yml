@@ -55,9 +55,7 @@ jobs:
         if: inputs.skip-tests == false
       - name: use node.js
         uses: actions/setup-node@v4
-        if: inputs.skip-tests == false  
-        with:
-          node-version: ${{ inputs.node-version }}
+        if: inputs.skip-tests == false
 
       - name: Install modules pnpm
         uses: pnpm/action-setup@v4
