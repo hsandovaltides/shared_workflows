@@ -21,7 +21,7 @@ on:
       retention-days:
         description: "Days of retention"
         required: false
-        default: 15
+        default: 3
         type: number
       pnpm-version:
         description: "Pnpm Version"
