@@ -48,12 +48,14 @@ jobs:
 
   test:
     runs-on: ubuntu-latest
-    if: inputs.skip-tests == false
+    
     steps: 
       - name: checkout repo
         uses: actions/checkout@v4
+        if: inputs.skip-tests == false
       - name: use node.js
         uses: actions/setup-node@v4
+        if: inputs.skip-tests == false  
         with:
           node-version: ${{ inputs.node-version }}
 
@@ -61,13 +63,13 @@ jobs:
         uses: pnpm/action-setup@v4
         with:
           version: ${{ inputs.pnpm-version }}
-        if: inputs.node-package-manager == 'pnpm'
+        if: inputs.node-package-manager == 'pnpm' && inputs.skip-tests == false
       
       - run: npm install
-        if: inputs.node-package-manager == 'npm'
+        if: inputs.node-package-manager == 'npm' && inputs.skip-tests == false
 
       - run: pnpm install
-        if: inputs.node-package-manager == 'pnpm'
+        if: inputs.node-package-manager == 'pnpm' && inputs.skip-tests == false
       
       - name: Run npm test
         run: npm run test
@@ -80,7 +82,7 @@ jobs:
         continue-on-error: true
 
       - name: show coverage
-        if: inputs.skip-tests == false
+        if: inputs.skip-tests == false 
         run: ls ./
         continue-on-error: true
 
