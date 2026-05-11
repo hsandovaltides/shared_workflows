@@ -19,6 +19,21 @@ on:
         description: "deepsource"
         required: true
         type: string
+      node-package-manager:
+        description: "Package manager"
+        default: "pnpm"
+        required: false
+        type: string
+      skip-tests:
+        description: "Skip tests"
+        required: false
+        default: true
+        type: boolean
+      pnpm-version:
+        description: "pnpm version"
+        required: false
+        default: "9.12.2"
+        type: string
 
 env:
   DATADOG_API_KEY: ${{secrets.DATADOG_API_KEY}}
@@ -33,6 +48,7 @@ jobs:
 
   test:
     runs-on: ubuntu-latest
+    if: inputs.skip-tests == false
     steps: 
       - name: checkout repo
         uses: actions/checkout@v4
@@ -40,18 +56,36 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ inputs.node-version }}
+
+      - name: Install modules pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: ${{ inputs.pnpm-version }}
+        if: inputs.node-package-manager == 'pnpm'
       
       - run: npm install
+        if: inputs.node-package-manager == 'npm'
+
+      - run: pnpm install
+        if: inputs.node-package-manager == 'pnpm'
       
       - name: Run npm test
         run: npm run test
+        if: inputs.node-package-manager == 'npm' && inputs.skip-tests == false
+        continue-on-error: true
+      
+      - name: Run pnpm test
+        run: pnpm run test
+        if: inputs.node-package-manager == 'pnpm' && inputs.skip-tests == false
         continue-on-error: true
 
       - name: show coverage
+        if: inputs.skip-tests == false
         run: ls ./
         continue-on-error: true
 
       - name: Report test coverage to DeepSource
+        if: inputs.skip-tests == false
         env:
           DEEPSOURCE_DSN: ${{ inputs.deepsource }}
         run: |
@@ -73,19 +107,20 @@ jobs:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_DEV_REGION }}
-      
-      - name: use node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ inputs.node-version }}
 
-      - name: Install modules
-        run: npm install
+      - name: Install modules pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: ${{ inputs.pnpm-version }}
+        if: inputs.node-package-manager == 'pnpm'
+      
+      - run: npm install
+        if: inputs.node-package-manager == 'npm'
+
+      - run: pnpm install
+        if: inputs.node-package-manager == 'pnpm'
+
       - name: Print Deploy
         run: ./node_modules/serverless/bin/serverless.js print --stage ${{ inputs.stage }}
       - name: Deploy App To Aws
         run: ./node_modules/serverless/bin/serverless.js deploy --stage ${{ inputs.stage }}
-      
-        
-
-  
