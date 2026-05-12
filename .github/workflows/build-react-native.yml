@@ -119,7 +119,8 @@ jobs:
         uses: w9jds/firebase-action@master
         if: ${{inputs.upload-firebase}}
         with:
-          args: appdistribution:distribute android/app/build/outputs/apk/release/*.apk --app ${{ secrets.FIREBASE_APP_ID }} --groups "testers"
+          args: appdistribution:distribute android/app/build/outputs/apk/release/*.apk --app ${{ secrets.FIREBASE_APP_ID }} --groups "testers" --release-notes "${{ github.event.head_commit.message }}"
+          
         env:
           GCP_SA_KEY: ${{ secrets.CREDENTIAL_FILE_CONTENT }}
       # ── 10. Subir APK como artefacto ──────────────────────────────────────────
