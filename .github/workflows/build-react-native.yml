@@ -32,6 +32,18 @@ on:
         description: "App Name"
         required: true
         type: string
+      upload-firebase:
+        description: "subir app a firebase"
+        required: false
+        default: false
+        type: boolean
+
+      upload-github:
+        description: "Upload to github"
+        required: false
+        default: true
+        type: boolean
+      
 
 jobs:
   build:
@@ -102,9 +114,18 @@ jobs:
             --build-cache \
             -Dorg.gradle.jvmargs="-Xmx3g -XX:MaxMetaspaceSize=512m"
 
+      
+      - name: upload to firebase app distribution 
+        uses: w9jds/firebase-action@master
+        if: ${{inputs.upload-firebase}}
+        with:
+          args: appdistribution:distribute app/build/outputs/apk/debug/app-debug.apk --app ${{ secrets.FIREBASE_APP_ID }} --groups "testers"
+        env:
+          GCP_SA_KEY: ${{ secrets.CREDENTIAL_FILE_CONTENT }}
       # ── 10. Subir APK como artefacto ──────────────────────────────────────────
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
+        if: ${{inputs.upload-github}}
         with:
           name: ${{inputs.app-name}}-${{ github.run_number }}
           path: android/app/build/outputs/apk/release/*.apk
