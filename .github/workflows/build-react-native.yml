@@ -115,7 +115,7 @@ jobs:
             -Dorg.gradle.jvmargs="-Xmx3g -XX:MaxMetaspaceSize=512m"
 
       
-      - name: upload to firebase app distribution v12.21.0
+      - name: upload to firebase app distribution v15.21.0
         uses: w9jds/firebase-action@v15.21.0
         if: ${{inputs.upload-firebase}}
         with:
